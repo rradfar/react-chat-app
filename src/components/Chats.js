@@ -1,4 +1,4 @@
-import React, { useEffect, UseRef, UseState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { ChatEngine } from 'react-chat-engine';
 
@@ -31,7 +31,7 @@ export default function Chats() {
     axios
       .get('https://api.chatengine.io/users/me', {
         headers: {
-          'project-ID': '784bdb9e-8724-4f63-8ab6-3c10d59f74a7',
+          'project-id': process.env.REACT_APP_CHAT_ENGINE_ID,
           'user-name': user.email,
           'user-secret': user.uid,
         },
@@ -42,21 +42,23 @@ export default function Chats() {
       .catch(() => {
         let formData = new FormData();
         formData.append('email', user.email);
-        formData.append('username', user.displayName);
+        formData.append('username', user.email);
         formData.append('secret', user.uid);
-        getFile(user.photoUrl).then(avatar => {
+        getFile(user.photoURL).then(avatar => {
           formData.append('avatar', avatar, avatar.name);
         });
         axios
           .post('https://api.chatengine.io/users', formData, {
             headers: {
-              'private-key': 'placeholder-private-key',
+              'private-key': process.env.REACT_APP_CHAT_ENGINE_KEY,
             },
           })
           .then(() => setLoading(false))
           .catch(error => console.log(error));
       });
-  }, [user, history]);
+  }, [user, history, setLoading]);
+
+  if (!user || loading) return 'Loading...';
 
   return (
     <div className='chats-page'>
@@ -68,9 +70,9 @@ export default function Chats() {
       </div>
       <ChatEngine
         height='calc(100vh - 66px)'
-        projectID='784bdb9e-8724-4f63-8ab6-3c10d59f74a7'
-        userName='.'
-        userSecret='.'
+        projectID={process.env.REACT_APP_CHAT_ENGINE_ID}
+        userName={user.email}
+        userSecret={user.uid}
       />
     </div>
   );
